@@ -2,7 +2,7 @@
   <img src="assets/banner.png" alt="MPP" width="100%" />
 </p>
 
-# solana-mpp-sdk
+# @solana/mpp
 
 Solana payment method for the [Machine Payments Protocol](https://mpp.dev).
 
@@ -10,6 +10,20 @@ Solana payment method for the [Machine Payments Protocol](https://mpp.dev).
 
 > [!IMPORTANT]
 > This repository is under active development. The [Solana MPP spec](https://github.com/tempoxyz/mpp-specs/pull/188) is not yet finalized — APIs and wire formats are subject to change.
+
+## Install
+
+```bash
+pnpm add @solana/mpp
+```
+
+Peer dependencies:
+
+```bash
+pnpm add @solana/kit mppx
+# Optional — for Swig session authorization:
+pnpm add @swig-wallet/kit
+```
 
 ## Features
 
@@ -33,34 +47,29 @@ Solana payment method for the [Machine Payments Protocol](https://mpp.dev).
 ## Architecture
 
 ```
-solana-mpp-sdk/
-├── sdk/src/
-│   ├── Methods.ts              # Shared charge + session schemas
-│   ├── constants.ts            # Token programs, USDC mints, RPC URLs
-│   ├── server/
-│   │   ├── Charge.ts           # Server: challenge, verify, broadcast
-│   │   └── Session.ts          # Server: session channel management
-│   ├── client/
-│   │   ├── Charge.ts           # Client: build tx, sign, send
-│   │   └── Session.ts          # Client: session lifecycle
-│   └── session/
-│       ├── Types.ts            # Session types and interfaces
-│       ├── Voucher.ts          # Voucher signing and verification
-│       ├── ChannelStore.ts     # Persistent channel state
-│       └── authorizers/        # Pluggable authorization strategies
-│           ├── UnboundedAuthorizer.ts
-│           ├── BudgetAuthorizer.ts
-│           └── SwigSessionAuthorizer.ts
-├── examples/
-│   ├── server.ts               # USDC-gated API
-│   └── client.ts               # Headless client with keypair
-└── demo/                       # Interactive playground (see demo/README.md)
+sdk/src/
+├── Methods.ts              # Shared charge + session schemas
+├── constants.ts            # Token programs, USDC mints, RPC URLs
+├── server/
+│   ├── Charge.ts           # Server: challenge, verify, broadcast
+│   └── Session.ts          # Server: session channel management
+├── client/
+│   ├── Charge.ts           # Client: build tx, sign, send
+│   └── Session.ts          # Client: session lifecycle
+└── session/
+    ├── Types.ts            # Session types and interfaces
+    ├── Voucher.ts          # Voucher signing and verification
+    ├── ChannelStore.ts     # Persistent channel state
+    └── authorizers/        # Pluggable authorization strategies
+        ├── UnboundedAuthorizer.ts
+        ├── BudgetAuthorizer.ts
+        └── SwigSessionAuthorizer.ts
 ```
 
 **Exports:**
-- `solana-mpp-sdk` — shared schemas, session types, and authorizers
-- `solana-mpp-sdk/server` — server-side charge + session, `Mppx`, `Store`
-- `solana-mpp-sdk/client` — client-side charge + session, `Mppx`
+- `@solana/mpp` — shared schemas, session types, and authorizers
+- `@solana/mpp/server` — server-side charge + session, `Mppx`, `Store`
+- `@solana/mpp/client` — client-side charge + session, `Mppx`
 
 ## Quick Start
 
@@ -69,7 +78,7 @@ solana-mpp-sdk/
 **Server:**
 
 ```ts
-import { Mppx, solana } from 'solana-mpp-sdk/server'
+import { Mppx, solana } from '@solana/mpp/server'
 
 const mppx = Mppx.create({
   secretKey: process.env.MPP_SECRET_KEY,
@@ -94,7 +103,7 @@ return result.withReceipt(Response.json({ data: '...' }))
 **Client:**
 
 ```ts
-import { Mppx, solana } from 'solana-mpp-sdk/client'
+import { Mppx, solana } from '@solana/mpp/client'
 
 const mppx = Mppx.create({
   methods: [solana.charge({ signer })], // any TransactionSigner
@@ -108,7 +117,7 @@ const response = await mppx.fetch('https://api.example.com/paid-endpoint')
 **Server:**
 
 ```ts
-import { Mppx, solana } from 'solana-mpp-sdk/server'
+import { Mppx, solana } from '@solana/mpp/server'
 
 const mppx = Mppx.create({
   secretKey: process.env.MPP_SECRET_KEY,
@@ -127,8 +136,8 @@ const mppx = Mppx.create({
 **Client:**
 
 ```ts
-import { Mppx, solana } from 'solana-mpp-sdk/client'
-import { UnboundedAuthorizer } from 'solana-mpp-sdk'
+import { Mppx, solana } from '@solana/mpp/client'
+import { UnboundedAuthorizer } from '@solana/mpp'
 
 const mppx = Mppx.create({
   methods: [
@@ -185,9 +194,9 @@ An interactive playground with a React frontend and Express backend, running aga
 
 ```bash
 surfpool start
-npm run demo:install
-npm run demo:server
-npm run demo:app
+pnpm demo:install
+pnpm demo:server
+pnpm demo:app
 ```
 
 See [demo/README.md](demo/README.md) for full details.

@@ -4,7 +4,7 @@
   "description": "Solana payment method for the MPP protocol",
   "repository": {
     "type": "git",
-    "url": "https://github.com/solana-foundation/mpp-ts"
+    "url": "https://github.com/solana-foundation/mpp-sdk"
   },
   "type": "module",
   "packageManager": "pnpm@10.14.0",
