@@ -3,7 +3,15 @@ dist/
 .env
 *.tsbuildinfo
 
+# Coverage
+coverage/
+*.lcov
+
 # Rust
 target/
 Cargo.lock
 .surfpool
+.DS_Store
+.npm-pack/
+DUMP.md
+package/

@@ -2,15 +2,16 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
     test: {
-        include: ['packages/*/src/__tests__/*.test.ts'],
-        exclude: ['**/integration.test.ts', '**/*-integration.test.ts'],
-        testTimeout: 15_000,
+        include: ['packages/*/src/__tests__/client-charge-integration.test.ts'],
+        testTimeout: 60_000,
+        fileParallelism: false,
+        maxWorkers: 1,
         globals: true,
         coverage: {
             provider: 'v8',
             reporter: ['text', 'lcov', 'json-summary'],
-            reportsDirectory: 'coverage',
-            include: ['packages/*/src/**/*.ts'],
+            reportsDirectory: 'coverage-surfpool',
+            include: ['packages/*/src/client/Charge.ts'],
             exclude: ['**/__tests__/**', '**/dist/**', '**/*.test.ts'],
         },
     },

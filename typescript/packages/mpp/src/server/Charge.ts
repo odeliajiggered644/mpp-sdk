@@ -189,7 +189,9 @@ async function verifyTransaction(
 
     return Receipt.from({
         method: 'solana',
+        ...(credential.challenge.id ? { challengeId: credential.challenge.id } : {}),
         reference: signature,
+        ...(challenge.externalId ? { externalId: challenge.externalId } : {}),
         status: 'success',
         timestamp: new Date().toISOString(),
     });
@@ -228,7 +230,9 @@ async function verifySignature(
 
     return Receipt.from({
         method: 'solana',
+        ...(credential.challenge.id ? { challengeId: credential.challenge.id } : {}),
         reference: signature,
+        ...(challenge.externalId ? { externalId: challenge.externalId } : {}),
         status: 'success',
         timestamp: new Date().toISOString(),
     });
@@ -358,6 +362,7 @@ type CredentialPayload = {
 type ChallengeRequest = {
     amount: string;
     currency: string;
+    externalId?: string;
     methodDetails: {
         decimals?: number;
         feePayer?: boolean;
@@ -498,8 +503,8 @@ async function waitForConfirmation(rpcUrl: string, signature: string, timeoutMs 
 export declare namespace charge {
     type Parameters = {
         /**
-         * Currency identifier. "SOL" for native SOL, or a base58-encoded
-         * SPL token mint address (e.g. USDC mint). Defaults to "SOL".
+         * Currency identifier. "sol" (lowercase) for native SOL, or a
+         * base58-encoded SPL token mint address. Defaults to "sol".
          */
         currency?: string;
         /** Token decimals (required when currency is a mint address). */

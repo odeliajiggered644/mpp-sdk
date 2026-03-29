@@ -6,6 +6,10 @@ on:
   pull_request:
   workflow_call:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 defaults:
   run:
     working-directory: typescript
@@ -60,8 +64,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
 
-  test:
-    name: Unit tests
+  test-ts:
+    name: TypeScript tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -73,8 +77,170 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: typescript/pnpm-lock.yaml
+
+      # TEMPORARY: Build surfpool-sdk-node native module for integration tests.
+      # This will be replaced with a published npm package once surfpool-sdk is released.
+      - name: Install Rust (for surfpool-sdk-node)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache surfpool-sdk-node build
+        id: cache-surfpool
+        uses: actions/cache@v4
+        with:
+          path: /tmp/surfpool
+          key: surfpool-sdk-node-${{ runner.os }}-${{ runner.arch }}-v2
+
+      - name: Clone and build surfpool-sdk-node
+        if: steps.cache-surfpool.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch feat/sdk https://github.com/solana-foundation/surfpool.git /tmp/surfpool
+          cd /tmp/surfpool/crates/sdk-node
+          npm install
+          npx napi build --platform surfpool-sdk --dts internal.d.ts --js internal.js
+        working-directory: .
+
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+
+      # TEMPORARY: Link the locally-built surfpool-sdk-node into node_modules
+      - name: Link surfpool-sdk
+        run: |
+          mkdir -p node_modules
+          ln -sfn /tmp/surfpool/crates/sdk-node node_modules/surfpool-sdk
+
+      # Run ALL tests (unit + surfpool integration) with coverage
+      - name: Run tests with coverage
+        run: pnpm vitest run --coverage --config vitest.config.ci.ts
+        env:
+          SURFPOOL_REPORT: "1"
+
+      - name: Upload TS coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ts-coverage
+          path: typescript/coverage/coverage-summary.json
+
+      - name: Upload TS surfpool report data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surfpool-reports-ts
+          path: typescript/target/surfpool-reports/
+          if-no-files-found: ignore
+
+  test-rust:
+    name: Rust tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust/target
+          key: ${{ runner.os }}-cargo-rust-${{ hashFiles('rust/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-rust-
+
+      - name: Run tests with coverage
+        working-directory: rust
+        env:
+          SURFPOOL_REPORT: "1"
+        run: cargo llvm-cov --json --output-path coverage.json
+
+      - name: Rust format check
+        working-directory: rust
+        run: cargo fmt --check
+
+      - name: Upload Rust coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-coverage
+          path: rust/coverage.json
+
+      - name: Upload Rust surfpool report data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surfpool-reports-rust
+          path: rust/target/surfpool-reports/
+          if-no-files-found: ignore
+
+  report:
+    name: Coverage & Report
+    if: always() && github.event_name == 'pull_request'
+    needs: [test-ts, test-rust]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Download all artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: ts-coverage
+          path: ts-cov
+        continue-on-error: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: rust-coverage
+          path: rust-cov
+        continue-on-error: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: surfpool-reports-rust
+          path: surfpool-reports
+        continue-on-error: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: surfpool-reports-ts
+          path: surfpool-reports
+        continue-on-error: true
+
+      # Generate merged Surfpool report from Rust + TS test data
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust/target
+          key: ${{ runner.os }}-cargo-rust-${{ hashFiles('rust/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-rust-
+      - name: Generate merged report
+        if: always()
+        run: |
+          COUNT=$(ls surfpool-reports/*.json 2>/dev/null | wc -l)
+          if [ "$COUNT" -gt 0 ]; then
+            echo "Generating report from $COUNT surfpool instances (Rust + TS)..."
+            mkdir -p rust/target
+            ln -sfn "$PWD/surfpool-reports" rust/target/surfpool-reports
+            cd rust && cargo test --test charge_integration generate_report -- --nocapture 2>&1 || true
+            [ -f target/surfpool-report.html ] && cp target/surfpool-report.html ../surfpool-report.html
+          fi
+        working-directory: .
+
+      # Fetch the reusable action
+      - uses: actions/checkout@v4
+        with:
+          repository: solana-foundation/surfpool
+          ref: feat/sdk
+          sparse-checkout: .github/actions
+          path: _surfpool
+
+      # Post unified coverage + report comment
+      - name: Post test report
+        if: always()
+        uses: ./_surfpool/.github/actions/test-report
+        with:
+          ts-coverage-json: ts-cov/coverage-summary.json
+          rust-coverage-json: rust-cov/coverage.json
+          report-path: surfpool-report.html
 
   integration:
     name: Integration tests

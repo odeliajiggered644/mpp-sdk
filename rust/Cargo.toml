@@ -1,6 +1,6 @@
 [package]
 name = "solana-mpp"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Solana payment method for the Machine Payments Protocol"
 license = "MIT"
@@ -35,12 +35,21 @@ reqwest = { version = "0.12", features = ["json"], optional = true }
 # Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+serde_json_canonicalizer = "0.3"
 bs58 = "0.5"
 base64 = "0.22"
 bincode = "1"
+
+# Crypto (HMAC challenge IDs)
+hmac = "0.12"
+sha2 = "0.10"
+
+# Time (expiration, timestamps)
+time = { version = "0.3", features = ["formatting", "parsing"] }
 
 # Errors
 thiserror = "2"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
+surfpool-sdk = { git = "https://github.com/solana-foundation/surfpool", branch = "feat/sdk" }
