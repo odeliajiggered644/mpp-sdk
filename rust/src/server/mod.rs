@@ -1542,7 +1542,7 @@ mod tests {
     fn new_valid_config_succeeds() {
         let mpp = test_mpp();
         assert_eq!(mpp.realm(), DEFAULT_REALM);
-        assert_eq!(mpp.currency(), "usdc");
+        assert_eq!(mpp.currency(), "USDC");
         assert_eq!(mpp.recipient(), TEST_RECIPIENT);
         assert_eq!(mpp.decimals(), 6);
     }
@@ -1627,7 +1627,7 @@ mod tests {
         // Decode the request and verify fields.
         let request: ChargeRequest = challenge.request.decode().unwrap();
         assert_eq!(request.amount, "100000"); // 0.10 * 10^6
-        assert_eq!(request.currency, "usdc");
+        assert_eq!(request.currency, "USDC");
         assert_eq!(request.recipient.as_deref(), Some(TEST_RECIPIENT));
     }
 
@@ -1638,7 +1638,7 @@ mod tests {
 
         let request: ChargeRequest = challenge.request.decode().unwrap();
         assert_eq!(request.amount, "1000000000"); // 1 SOL = 10^9 lamports
-        assert_eq!(request.currency, "sol");
+        assert_eq!(request.currency, "SOL");
     }
 
     #[test]
@@ -2016,7 +2016,7 @@ mod tests {
 
         let expected = ChargeRequest {
             amount: "100000".to_string(),
-            currency: "usdc".to_string(),
+            currency: "USDC".to_string(),
             recipient: Some(Pubkey::new_unique().to_string()), // different recipient
             ..Default::default()
         };
