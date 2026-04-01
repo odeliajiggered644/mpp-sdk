@@ -422,7 +422,6 @@ impl Mpp {
     // ── Settlement ──
 
     /// Pull mode: deserialize tx, optionally co-sign, simulate, broadcast, verify.
-    #[tracing::instrument(skip_all, fields(currency = %request.currency, amount = %request.amount))]
     async fn verify_pull(
         &self,
         transaction_b64: &str,
@@ -441,15 +440,11 @@ impl Mpp {
         let t0 = std::time::Instant::now();
 
         // Verify the transaction instructions BEFORE co-signing or broadcasting.
-        {
-            let _span = tracing::info_span!("pre_broadcast_check").entered();
-            verify_transaction_pre_broadcast(&tx, request, method_details)?;
-        }
-        tracing::info!(elapsed_ms = t0.elapsed().as_millis(), "pre-broadcast check");
+        verify_transaction_pre_broadcast(&tx, request, method_details)?;
+        tracing::info!(elapsed_ms = %t0.elapsed().as_millis(), step = "pre_broadcast_check", "verify_pull");
 
         // Co-sign if server is fee payer (only after verification passes).
         if method_details.fee_payer.unwrap_or(false) {
-            let _span = tracing::info_span!("kms_cosign").entered();
             let signer = self.fee_payer_signer.as_ref().ok_or_else(|| {
                 VerificationError::new("Fee payer enabled but no signer configured")
             })?;
@@ -472,32 +467,46 @@ impl Mpp {
                 })?;
             tx.signatures[idx] = sig;
         }
-        tracing::info!(elapsed_ms = t0.elapsed().as_millis(), "co-sign");
+        tracing::info!(elapsed_ms = %t0.elapsed().as_millis(), step = "cosign", "verify_pull");
 
         // Simulate before broadcasting (prevent fee loss).
-        {
-            let _span = tracing::info_span!("simulate").entered();
-            let sim = self.rpc.simulate_transaction(&tx).map_err(|e| {
-                VerificationError::network_error(format!("Simulation RPC error: {e}"))
-            })?;
-            if let Some(err) = sim.value.err {
-                return Err(VerificationError::transaction_failed(format!(
-                    "Simulation failed: {err}"
-                )));
+        let sim = self
+            .rpc
+            .simulate_transaction(&tx)
+            .map_err(|e| VerificationError::network_error(format!("Simulation RPC error: {e}")))?;
+        if let Some(err) = sim.value.err {
+            return Err(VerificationError::transaction_failed(format!(
+                "Simulation failed: {err}"
+            )));
+        }
+        tracing::info!(elapsed_ms = %t0.elapsed().as_millis(), step = "simulate", "verify_pull");
+
+        // Broadcast and wait for Confirmed commitment (not Finalized).
+        let signature = self
+            .rpc
+            .send_transaction(&tx)
+            .map_err(|e| VerificationError::network_error(format!("Broadcast failed: {e}")))?;
+        tracing::info!(elapsed_ms = %t0.elapsed().as_millis(), step = "send", "verify_pull");
+
+        // Poll for confirmed status (typically ~400ms on devnet/surfnet).
+        use solana_commitment_config::CommitmentConfig;
+        let commitment = CommitmentConfig::confirmed();
+        for _ in 0..30 {
+            match self
+                .rpc
+                .confirm_transaction_with_commitment(&signature, commitment)
+            {
+                Ok(resp) if resp.value => {
+                    tracing::info!(elapsed_ms = %t0.elapsed().as_millis(), step = "confirmed", "verify_pull");
+                    return Ok(signature.to_string());
+                }
+                _ => std::thread::sleep(std::time::Duration::from_millis(200)),
             }
         }
-        tracing::info!(elapsed_ms = t0.elapsed().as_millis(), "simulate");
 
-        // Broadcast.
-        let signature = {
-            let _span = tracing::info_span!("broadcast").entered();
-            self.rpc
-                .send_and_confirm_transaction(&tx)
-                .map_err(|e| VerificationError::network_error(format!("Broadcast failed: {e}")))?
-        };
-        tracing::info!(elapsed_ms = t0.elapsed().as_millis(), "broadcast confirmed");
-
-        Ok(signature.to_string())
+        Err(VerificationError::network_error(
+            "Transaction not confirmed within timeout".to_string(),
+        ))
     }
 
     /// Push mode: fetch tx by signature, verify on-chain.

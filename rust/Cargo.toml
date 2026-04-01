@@ -21,6 +21,7 @@ solana-hash = { version = "3.1", default-features = false }
 solana-instruction = { version = "3.1", default-features = false }
 solana-message = { version = "3.0", default-features = false }
 solana-pubkey = { version = "3.0", default-features = false }
+solana-commitment-config = { version = "3.0", default-features = false }
 solana-rpc-client = { version = "3.1", default-features = false }
 solana-signature = { version = "3.1", default-features = false, features = ["default"] }
 solana-system-interface = { version = "2.0", default-features = false }
