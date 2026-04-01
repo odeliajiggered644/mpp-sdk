@@ -288,7 +288,6 @@ impl Mpp {
     /// Verify a payment credential (simple API).
     ///
     /// Decodes the charge request from the echoed challenge automatically.
-    #[tracing::instrument(skip_all, name = "mpp.verify_credential")]
     pub async fn verify_credential(
         &self,
         credential: &PaymentCredential,
