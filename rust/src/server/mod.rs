@@ -149,7 +149,7 @@ impl Mpp {
             rpc: Arc::new(RpcClient::new(rpc_url)),
             realm,
             secret_key,
-            currency: config.currency.to_lowercase(),
+            currency: config.currency,
             recipient: config.recipient,
             decimals: config.decimals as u32,
             network: config.network,

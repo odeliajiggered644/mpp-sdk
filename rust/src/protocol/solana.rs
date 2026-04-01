@@ -223,7 +223,6 @@ pub struct MethodDetails {
     /// Server-provided recent blockhash.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub recent_blockhash: Option<String>,
-
 }
 
 /// A payment split — additional transfer in the same asset.
